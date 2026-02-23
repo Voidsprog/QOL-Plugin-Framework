@@ -1,0 +1,9 @@
+C:\Users\5600\Desktop\QOL\QOLFramework\bin\Release\net48\QOLFramework.dll
+C:\Users\5600\Desktop\QOL\QOLFramework\bin\Release\net48\QOLFramework.pdb
+C:\Users\5600\Desktop\QOL\QOLFramework\obj\Release\net48\QOLFramework.csproj.AssemblyReference.cache
+C:\Users\5600\Desktop\QOL\QOLFramework\obj\Release\net48\QOLFramework.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\5600\Desktop\QOL\QOLFramework\obj\Release\net48\QOLFramework.csproj.CoreCompileInputs.cache
+C:\Users\5600\Desktop\QOL\QOLFramework\obj\Release\net48\QOLFramework.dll
+C:\Users\5600\Desktop\QOL\QOLFramework\obj\Release\net48\QOLFramework.pdb
+C:\Users\5600\Desktop\QOL\QOLFramework\bin\Release\net48\Newtonsoft.Json.dll
+C:\Users\5600\Desktop\QOL\QOLFramework\obj\Release\net48\QOLFrame.CED21395.Up2Date
