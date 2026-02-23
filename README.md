@@ -25,7 +25,7 @@ Modular architecture for custom roles, SCPs, tweaks, GUI, events, and a rich set
 | **QOLFrameworkLoader** | Singleton entry point. Initializes and shuts down modules, roles, tweaks, GUI, and utilities. |
 | **ModuleManager** | Register / enable / disable modules. Forwards LabAPI events (round, players) to active modules. |
 | **IModule** | Interface: `Name`, `Description`, `Author`, `Version`, `Priority`, `IsEnabled`; lifecycle hooks below. |
-| **ModuleBase** | Abstract base with `Log` / `LogWarning` / `LogError`. |
+| **ModuleBase** | Abstract base with `Log` / `LogWarning` / `LogError`; `RunSafe(Action)` and `RunSafe&lt;T&gt;(Func&lt;T&gt;, fallback)` for try-catch execution. |
 | **ModuleBase&lt;TConfig&gt;** | Module with typed `Config` (extends `ModuleConfig`). |
 
 **Module lifecycle:** `OnEnabled` → `OnDisabled` · `OnPlayerJoined` / `OnPlayerLeft` · `OnRoundStarted` / `OnRoundEnded` / `OnWaitingForPlayers`.
@@ -94,7 +94,7 @@ Modular architecture for custom roles, SCPs, tweaks, GUI, events, and a rich set
 
 | Area | Description |
 |------|-------------|
-| **PlayerExtensions** | `HasQOLPermission`, `SendQOLHint`, `SendColoredHint`, `IsScp`, `IsHuman`, `IsAlive`, `GetClosestPlayer`, `GetNearbyPlayers`, `GetDistanceTo`, `HealToMax`, `HealPercent`, `DamagePercent`, `BroadcastToAll`. |
+| **PlayerExtensions** | `IsValid` (null/destroyed check), `HasQOLPermission`, `SendQOLHint`, `SendColoredHint`, `IsScp`, `IsHuman`, `IsAlive`, `GetClosestPlayer`, `GetNearbyPlayers`, `GetDistanceTo`, `HealToMax`, `HealPercent`, `DamagePercent`, `BroadcastToAll`. |
 | **StringExtensions** | `Color`, `Bold`, `Italic`, `Size`, `Underline`, `StrikeThrough`, `QOLTag`, `ScpTag`, `WarningTag`, `ErrorTag`, `SuccessTag`. |
 
 ---
@@ -123,8 +123,8 @@ Modular architecture for custom roles, SCPs, tweaks, GUI, events, and a rich set
 |---------|-------------|
 | **MapUtilities** | `AllRooms`, `GetRoomsByZone`, `GetLczRooms` / `GetHczRooms` / `GetEzRooms` / `GetSurfaceRooms`, `GetRoomName`, `FindRoomsByName`, `GetRandomRoom`, `GetClosestRoom`, `GetZoneAt`, `GetSpawnablePosition`, `GetPlayersInZone` / `GetPlayersInRoom` / `GetPlayersInRadius`, `DistanceBetweenRooms`. |
 | **RoundUtilities** | `IsRoundActive`, `RoundElapsed`, `RoundElapsedSeconds`, `HasElapsed`, `GetAlivePlayerCount` / `GetAliveHumanCount` / `GetAliveScpCount`, `GetAlivePlayers` / `GetAliveHumans` / `GetAliveScps`, `GetPlayersByTeam` / `GetPlayersByRole`, `GetRandomAlivePlayer`, `GetTeamCounts`, `FormatElapsed`. |
-| **PlayerDataStore** | Per-player, per-round temp data: `Set<T>`, `Get<T>`, `Has`, `Remove`, `ClearPlayer`, `Increment`, `IncrementFloat`, `Toggle`. Cleared on round start. |
-| **CoroutineHelper** | MEC helpers: `CallDelayed`, `CallRepeating`, `CallFor`, `RunNamed`, `KillNamed`, `KillAll`, `IsRunning`, `Sequence(steps)`. |
+| **PlayerDataStore** | Per-player, per-round temp data: `Set<T>`, `Get<T>`, `Has`, `Remove`, `ClearPlayer`, `Increment`, `IncrementFloat`, `Toggle`. Cleared on round start and when player leaves. |
+| **CoroutineHelper** | MEC helpers: `CallDelayed(delay, action)`, `CallDelayed(delay, player, action)` (só executa se jogador ainda válido), `CallRepeating`, `CallFor`, `RunNamed`, `KillNamed`, `KillAll`, `IsRunning`, `Sequence(steps)`. |
 | **CooldownManager** | Global and per-player cooldowns: `IsOnCooldown`, `SetCooldown`, `TryUse` (run action only if not on cooldown), `GetRemainingCooldown`, `RemoveCooldown`, `ClearPlayer`. |
 | **CassieHelper** | CASSIE helpers: `Announce`, `AnnounceDelayed`, `AnnounceSequence`, `ScpEscaped`, `ScpContained`, `ScpTerminated`, `FacilityAlert`, `WarheadCountdown`, `LightsOut`, `CustomAlert`. |
 | **DamageModifierSystem** | Damage modifiers (multiplier + flat) per player and global; `AddGlobalModifier`, `AddPlayerModifier`, `CalculateDamage(baseDamage, target)`. |
@@ -133,7 +133,7 @@ Modular architecture for custom roles, SCPs, tweaks, GUI, events, and a rich set
 | **BroadcastManager** | Queued broadcasts with priority; `Send` / `SendImmediate`, `SendToAll` / `SendImmediateToAll`, `ClearQueue` / `ClearAllQueues`. Avoids hint overlap. |
 | **RandomHelper** | `Chance(percent)`, `Pick<T>`, `PickWeighted<T>`, `Shuffle`, `PickMultiple`, `Range(int|float)`, `RandomOffset`. |
 
-Utilities are initialized/cleaned by the loader; round-scoped data is cleared in `OnWaitingForPlayers`.
+Utilities are initialized/cleaned by the loader. Round-scoped data is cleared in `OnWaitingForPlayers`; when a player leaves, `PlayerDataStore`, `CooldownManager`, and `BroadcastManager` clear that player's data automatically.
 
 ---
 
