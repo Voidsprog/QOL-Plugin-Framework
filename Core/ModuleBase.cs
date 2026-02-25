@@ -15,7 +15,7 @@ namespace QOLFramework.Core
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>Tipos de módulos que têm de estar registados e ativos para este módulo poder ativar. Null ou vazio = sem dependências.</summary>
-        protected virtual Type[] RequiredModules => null;
+        public virtual Type[] RequiredModules => null;
 
         protected ModuleManager Manager { get; private set; }
 

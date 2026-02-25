@@ -1,0 +1,3 @@
+c:\Users\5600\Desktop\QOL\QOLFramework\obj\Debug\net48\QOLFramework.csproj.AssemblyReference.cache
+c:\Users\5600\Desktop\QOL\QOLFramework\obj\Debug\net48\QOLFramework.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\5600\Desktop\QOL\QOLFramework\obj\Debug\net48\QOLFramework.csproj.CoreCompileInputs.cache

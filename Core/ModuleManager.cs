@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.Handlers;
 using LabApi.Features.Wrappers;
@@ -268,7 +269,7 @@ namespace QOLFramework.Core
 
         private void OnPlayerHurting(PlayerHurtingEventArgs ev)
         {
-            if (ev?.Target == null) return;
+            if (ev?.Player == null) return;
             foreach (var module in EnabledModules)
             {
                 if (module is ModuleBase mb)
@@ -281,10 +282,10 @@ namespace QOLFramework.Core
             {
                 var qolEv = new PlayerDamagedEvent
                 {
-                    Target = ev.Player != null ? Player.Get(ev.Player) : null,
-                    Attacker = ev.Attacker != null ? Player.Get(ev.Attacker) : null,
-                    Amount = ev.DamageHandler?.Damage ?? 0f,
-                    DamageType = ev.DamageHandler?.Type.ToString() ?? ""
+                    Target = ev.Player,
+                    Attacker = ev.Attacker,
+                    Amount = GetDamageAmount(ev.DamageHandler),
+                    DamageType = ev.DamageHandler?.GetType().Name ?? ""
                 };
                 QOLEventBus.Publish(qolEv);
             }
@@ -306,13 +307,25 @@ namespace QOLFramework.Core
             {
                 var qolEv = new PlayerDiedEvent
                 {
-                    Target = ev.Player != null ? Player.Get(ev.Player) : null,
-                    Killer = ev.Attacker != null ? Player.Get(ev.Attacker) : null,
-                    Cause = ev.DamageHandler?.Type.ToString() ?? ""
+                    Target = ev.Player,
+                    Killer = ev.Attacker,
+                    Cause = ev.DamageHandler?.GetType().Name ?? ""
                 };
                 QOLEventBus.Publish(qolEv);
             }
             catch { }
+        }
+
+        private static float GetDamageAmount(object handler)
+        {
+            if (handler == null) return 0f;
+            var t = handler.GetType();
+            var prop = t.GetProperty("Damage", BindingFlags.Public | BindingFlags.Instance)
+                ?? t.GetProperty("DamageAmount", BindingFlags.Public | BindingFlags.Instance)
+                ?? t.GetProperty("Amount", BindingFlags.Public | BindingFlags.Instance);
+            if (prop != null && prop.PropertyType == typeof(float))
+                return (float)prop.GetValue(handler);
+            return 0f;
         }
     }
 }
