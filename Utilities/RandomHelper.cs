@@ -51,6 +51,7 @@ namespace QOLFramework.Utilities
 
         public static IList<T> Shuffle<T>(IList<T> list)
         {
+            if (list == null) return new List<T>();
             var shuffled = new List<T>(list);
             for (int i = shuffled.Count - 1; i > 0; i--)
             {
@@ -64,6 +65,7 @@ namespace QOLFramework.Utilities
 
         public static IEnumerable<T> PickMultiple<T>(IList<T> items, int count)
         {
+            if (items == null || items.Count == 0 || count <= 0) return Enumerable.Empty<T>();
             var shuffled = Shuffle(items);
             return shuffled.Take(Math.Min(count, shuffled.Count));
         }

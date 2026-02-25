@@ -22,6 +22,7 @@ namespace QOLFramework.Utilities
 
         public static void AnnounceSequence(float intervalBetween, params string[] messages)
         {
+            if (messages == null || messages.Length == 0) return;
             Timing.RunCoroutine(SequenceCoroutine(intervalBetween, messages));
         }
 
@@ -29,7 +30,7 @@ namespace QOLFramework.Utilities
         {
             foreach (var msg in messages)
             {
-                Announce(msg);
+                if (!string.IsNullOrEmpty(msg)) Announce(msg);
                 yield return Timing.WaitForSeconds(interval);
             }
         }
@@ -77,6 +78,7 @@ namespace QOLFramework.Utilities
 
         private static string FormatScpNumber(string number)
         {
+            if (string.IsNullOrEmpty(number)) return number ?? "";
             var clean = number.Replace("-", "").Replace("SCP", "").Trim();
             var chars = clean.ToCharArray();
             return string.Join(" ", chars);

@@ -34,7 +34,7 @@ namespace QOLFramework.Utilities
         public static string AddPlayerModifier(Player player, string name, float multiplier = 1f, float flatBonus = 0f, int priority = 0)
         {
             if (player == null) return null;
-            var userId = GetId(player);
+            var userId = PlayerIdHelper.GetId(player);
             if (!_playerModifiers.ContainsKey(userId))
                 _playerModifiers[userId] = new List<DamageModifier>();
 
@@ -59,7 +59,7 @@ namespace QOLFramework.Utilities
         public static bool RemovePlayerModifier(Player player, string id)
         {
             if (player == null) return false;
-            var userId = GetId(player);
+            var userId = PlayerIdHelper.GetId(player);
             if (!_playerModifiers.ContainsKey(userId)) return false;
             return _playerModifiers[userId].RemoveAll(m => m.Id == id) > 0;
         }
@@ -67,7 +67,7 @@ namespace QOLFramework.Utilities
         public static void ClearPlayerModifiers(Player player)
         {
             if (player == null) return;
-            _playerModifiers.Remove(GetId(player));
+            _playerModifiers.Remove(PlayerIdHelper.GetId(player));
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace QOLFramework.Utilities
 
             if (target != null)
             {
-                var userId = GetId(target);
+                var userId = PlayerIdHelper.GetId(target);
                 if (_playerModifiers.ContainsKey(userId))
                 {
                     foreach (var mod in _playerModifiers[userId])
@@ -98,12 +98,6 @@ namespace QOLFramework.Utilities
         {
             _globalModifiers.Clear();
             _playerModifiers.Clear();
-        }
-
-        private static string GetId(Player player)
-        {
-            try { return player.UserId ?? "unknown"; }
-            catch { return "unknown"; }
         }
     }
 

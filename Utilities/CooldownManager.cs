@@ -14,6 +14,7 @@ namespace QOLFramework.Utilities
         private static readonly Dictionary<string, Dictionary<string, DateTime>> _playerCooldowns
             = new Dictionary<string, Dictionary<string, DateTime>>();
 
+        /// <summary>True se a chave global está em cooldown.</summary>
         public static bool IsOnCooldown(string key)
         {
             if (!_globalCooldowns.ContainsKey(key)) return false;
@@ -25,10 +26,11 @@ namespace QOLFramework.Utilities
             return true;
         }
 
+        /// <summary>True se o jogador está em cooldown para a chave.</summary>
         public static bool IsOnCooldown(Player player, string key)
         {
             if (player == null) return false;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             if (!_playerCooldowns.ContainsKey(id)) return false;
             if (!_playerCooldowns[id].ContainsKey(key)) return false;
             if (DateTime.UtcNow >= _playerCooldowns[id][key])
@@ -39,15 +41,17 @@ namespace QOLFramework.Utilities
             return true;
         }
 
+        /// <summary>Define cooldown global.</summary>
         public static void SetCooldown(string key, float seconds)
         {
             _globalCooldowns[key] = DateTime.UtcNow.AddSeconds(seconds);
         }
 
+        /// <summary>Define cooldown por jogador (usa PlayerIdHelper).</summary>
         public static void SetCooldown(Player player, string key, float seconds)
         {
             if (player == null) return;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             if (!_playerCooldowns.ContainsKey(id))
                 _playerCooldowns[id] = new Dictionary<string, DateTime>();
             _playerCooldowns[id][key] = DateTime.UtcNow.AddSeconds(seconds);
@@ -71,6 +75,7 @@ namespace QOLFramework.Utilities
             return true;
         }
 
+        /// <summary>Segundos restantes de cooldown global (0 se não estiver em cooldown).</summary>
         public static float GetRemainingCooldown(string key)
         {
             if (!_globalCooldowns.ContainsKey(key)) return 0f;
@@ -78,10 +83,11 @@ namespace QOLFramework.Utilities
             return remaining > 0 ? remaining : 0f;
         }
 
+        /// <summary>Segundos restantes de cooldown do jogador (0 se não estiver em cooldown).</summary>
         public static float GetRemainingCooldown(Player player, string key)
         {
             if (player == null) return 0f;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             if (!_playerCooldowns.ContainsKey(id)) return 0f;
             if (!_playerCooldowns[id].ContainsKey(key)) return 0f;
             var remaining = (float)(_playerCooldowns[id][key] - DateTime.UtcNow).TotalSeconds;
@@ -96,27 +102,22 @@ namespace QOLFramework.Utilities
         public static void RemoveCooldown(Player player, string key)
         {
             if (player == null) return;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             if (_playerCooldowns.ContainsKey(id))
                 _playerCooldowns[id].Remove(key);
         }
 
+        /// <summary>Remove todos os cooldowns do jogador (chamado ao sair).</summary>
         public static void ClearPlayer(Player player)
         {
             if (player == null) return;
-            _playerCooldowns.Remove(GetId(player));
+            _playerCooldowns.Remove(PlayerIdHelper.GetId(player));
         }
 
         internal static void ClearAll()
         {
             _globalCooldowns.Clear();
             _playerCooldowns.Clear();
-        }
-
-        private static string GetId(Player player)
-        {
-            try { return player.UserId ?? "unknown"; }
-            catch { return "unknown"; }
         }
     }
 }

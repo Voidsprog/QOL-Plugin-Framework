@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.Handlers;
 using LabApi.Features.Wrappers;
+using QOLFramework.Events;
 using QOLFramework.Utilities;
 
 namespace QOLFramework.Core
@@ -26,6 +28,8 @@ namespace QOLFramework.Core
 
             PlayerEvents.Joined += OnPlayerJoined;
             PlayerEvents.Left += OnPlayerLeft;
+            PlayerEvents.Hurting += OnPlayerHurting;
+            PlayerEvents.Dying += OnPlayerDying;
             ServerEvents.WaitingForPlayers += OnWaitingForPlayers;
             ServerEvents.RoundStarted += OnRoundStarted;
             ServerEvents.RoundEnded += OnRoundEnded;
@@ -33,6 +37,7 @@ namespace QOLFramework.Core
             foreach (var module in _modules.OrderBy(m => m.Priority))
             {
                 if (!module.IsEnabled) continue;
+                if (!TryEnableModule(module)) continue;
 
                 try
                 {
@@ -57,6 +62,8 @@ namespace QOLFramework.Core
 
             PlayerEvents.Joined -= OnPlayerJoined;
             PlayerEvents.Left -= OnPlayerLeft;
+            PlayerEvents.Hurting -= OnPlayerHurting;
+            PlayerEvents.Dying -= OnPlayerDying;
             ServerEvents.WaitingForPlayers -= OnWaitingForPlayers;
             ServerEvents.RoundStarted -= OnRoundStarted;
             ServerEvents.RoundEnded -= OnRoundEnded;
@@ -98,7 +105,7 @@ namespace QOLFramework.Core
             _modules.Add(module);
             ModuleRegistered?.Invoke(module);
 
-            if (_isRunning && module.IsEnabled)
+            if (_isRunning && module.IsEnabled && TryEnableModule(module))
             {
                 try
                 {
@@ -111,6 +118,26 @@ namespace QOLFramework.Core
                     module.IsEnabled = false;
                 }
             }
+        }
+
+        /// <summary>Verifica dependências (RequiredModules). Retorna false se faltar algum módulo obrigatório.</summary>
+        private bool TryEnableModule(IModule module)
+        {
+            if (module is not ModuleBase mb) return true;
+            var required = mb.RequiredModules;
+            if (required == null || required.Length == 0) return true;
+
+            foreach (var type in required)
+            {
+                var dep = _modules.FirstOrDefault(m => type.IsAssignableFrom(m.GetType()));
+                if (dep == null || !dep.IsEnabled)
+                {
+                    LabApi.Features.Console.Logger.Warn($"[QOL] Module '{module.Name}' not enabled: required module '{type?.Name ?? "?"}' is missing or disabled.");
+                    module.IsEnabled = false;
+                    return false;
+                }
+            }
+            return true;
         }
 
         public void Unregister<T>() where T : IModule
@@ -179,6 +206,9 @@ namespace QOLFramework.Core
         private void OnPlayerLeft(LabApi.Events.Arguments.PlayerEvents.PlayerLeftEventArgs ev)
         {
             if (ev?.Player == null) return;
+            PlayerDataStore.ClearPlayer(ev.Player);
+            CooldownManager.ClearPlayer(ev.Player);
+            BroadcastManager.ClearQueue(ev.Player);
             foreach (var module in EnabledModules)
             {
                 try { module.OnPlayerLeft(ev.Player); }
@@ -234,6 +264,55 @@ namespace QOLFramework.Core
                     LabApi.Features.Console.Logger.Error($"[QOL] Module '{module.Name}' error in OnRoundEnded: {ex}");
                 }
             }
+        }
+
+        private void OnPlayerHurting(PlayerHurtingEventArgs ev)
+        {
+            if (ev?.Target == null) return;
+            foreach (var module in EnabledModules)
+            {
+                if (module is ModuleBase mb)
+                {
+                    try { mb.OnPlayerHurting(ev); }
+                    catch (Exception ex) { LabApi.Features.Console.Logger.Error($"[QOL] Module '{module.Name}' error in OnPlayerHurting: {ex}"); }
+                }
+            }
+            try
+            {
+                var qolEv = new PlayerDamagedEvent
+                {
+                    Target = ev.Player != null ? Player.Get(ev.Player) : null,
+                    Attacker = ev.Attacker != null ? Player.Get(ev.Attacker) : null,
+                    Amount = ev.DamageHandler?.Damage ?? 0f,
+                    DamageType = ev.DamageHandler?.Type.ToString() ?? ""
+                };
+                QOLEventBus.Publish(qolEv);
+            }
+            catch { }
+        }
+
+        private void OnPlayerDying(PlayerDyingEventArgs ev)
+        {
+            if (ev?.Player == null) return;
+            foreach (var module in EnabledModules)
+            {
+                if (module is ModuleBase mb)
+                {
+                    try { mb.OnPlayerDying(ev); }
+                    catch (Exception ex) { LabApi.Features.Console.Logger.Error($"[QOL] Module '{module.Name}' error in OnPlayerDying: {ex}"); }
+                }
+            }
+            try
+            {
+                var qolEv = new PlayerDiedEvent
+                {
+                    Target = ev.Player != null ? Player.Get(ev.Player) : null,
+                    Killer = ev.Attacker != null ? Player.Get(ev.Attacker) : null,
+                    Cause = ev.DamageHandler?.Type.ToString() ?? ""
+                };
+                QOLEventBus.Publish(qolEv);
+            }
+            catch { }
         }
     }
 }

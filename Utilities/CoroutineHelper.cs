@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LabApi.Features.Wrappers;
 using MEC;
 
 namespace QOLFramework.Utilities
@@ -16,6 +17,20 @@ namespace QOLFramework.Utilities
         public static CoroutineHandle CallDelayed(float delay, Action action)
         {
             return Timing.CallDelayed(delay, action);
+        }
+
+        /// <summary>Executa a ação após o delay apenas se o jogador ainda for válido (não destruído). Evita efeitos em jogadores que já saíram.</summary>
+        public static CoroutineHandle CallDelayed(float delay, Player player, Action action)
+        {
+            return Timing.CallDelayed(delay, () =>
+            {
+                if (player == null || player.IsDestroyed) return;
+                try { action(); }
+                catch (Exception ex)
+                {
+                    LabApi.Features.Console.Logger.Error($"[QOL:Coroutine] CallDelayed(player) error: {ex.Message}");
+                }
+            });
         }
 
         public static CoroutineHandle CallRepeating(float interval, Action action, float initialDelay = 0f)

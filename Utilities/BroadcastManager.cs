@@ -12,8 +12,8 @@ namespace QOLFramework.Utilities
     /// </summary>
     public static class BroadcastManager
     {
-        private static readonly Dictionary<string, Queue<QueuedBroadcast>> _playerQueues
-            = new Dictionary<string, Queue<QueuedBroadcast>>();
+        private static readonly Dictionary<string, List<QueuedBroadcast>> _playerQueues
+            = new Dictionary<string, List<QueuedBroadcast>>();
 
         private static readonly Dictionary<string, DateTime> _playerCooldowns
             = new Dictionary<string, DateTime>();
@@ -36,15 +36,16 @@ namespace QOLFramework.Utilities
             _playerCooldowns.Clear();
         }
 
+        /// <summary>Enfileira um hint para o jogador (maior priority é enviado primeiro).</summary>
         public static void Send(Player player, string message, float duration = 5f, int priority = 0)
         {
             if (player == null || player.IsDestroyed) return;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
 
             if (!_playerQueues.ContainsKey(id))
-                _playerQueues[id] = new Queue<QueuedBroadcast>();
+                _playerQueues[id] = new List<QueuedBroadcast>();
 
-            _playerQueues[id].Enqueue(new QueuedBroadcast
+            _playerQueues[id].Add(new QueuedBroadcast
             {
                 Message = message,
                 Duration = duration,
@@ -53,6 +54,7 @@ namespace QOLFramework.Utilities
             });
         }
 
+        /// <summary>Envia o hint imediatamente e aplica cooldown.</summary>
         public static void SendImmediate(Player player, string message, float duration = 5f)
         {
             if (player == null || player.IsDestroyed) return;
@@ -60,8 +62,10 @@ namespace QOLFramework.Utilities
             SetCooldown(player, duration);
         }
 
+        /// <summary>Enfileira o mesmo hint para todos os jogadores válidos.</summary>
         public static void SendToAll(string message, float duration = 5f, int priority = 0)
         {
+            if (Player.List == null) return;
             foreach (var player in Player.List)
             {
                 if (player == null || player.IsDestroyed) continue;
@@ -71,6 +75,7 @@ namespace QOLFramework.Utilities
 
         public static void SendImmediateToAll(string message, float duration = 5f)
         {
+            if (Player.List == null) return;
             foreach (var player in Player.List)
             {
                 if (player == null || player.IsDestroyed) continue;
@@ -78,12 +83,14 @@ namespace QOLFramework.Utilities
             }
         }
 
+        /// <summary>Remove todos os hints em fila para o jogador.</summary>
         public static void ClearQueue(Player player)
         {
             if (player == null) return;
-            _playerQueues.Remove(GetId(player));
+            _playerQueues.Remove(PlayerIdHelper.GetId(player));
         }
 
+        /// <summary>Limpa todas as filas e cooldowns.</summary>
         public static void ClearAllQueues()
         {
             _playerQueues.Clear();
@@ -101,9 +108,8 @@ namespace QOLFramework.Utilities
                 foreach (var kvp in _playerQueues.ToList())
                 {
                     var id = kvp.Key;
-                    var queue = kvp.Value;
-
-                    if (queue.Count == 0)
+                    var list = kvp.Value;
+                    if (list == null || list.Count == 0)
                     {
                         toRemove.Add(id);
                         continue;
@@ -111,7 +117,9 @@ namespace QOLFramework.Utilities
 
                     if (IsOnCooldown(id)) continue;
 
-                    var broadcast = queue.Dequeue();
+                    list.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+                    var broadcast = list[0];
+                    list.RemoveAt(0);
                     var player = FindPlayer(id);
                     if (player == null || player.IsDestroyed)
                     {
@@ -140,21 +148,16 @@ namespace QOLFramework.Utilities
 
         private static void SetCooldown(Player player, float duration)
         {
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             _playerCooldowns[id] = DateTime.UtcNow.AddSeconds(duration);
         }
 
-        private static string GetId(Player player)
+        private static Player FindPlayer(string playerId)
         {
-            try { return player.UserId ?? "unknown"; }
-            catch { return "unknown"; }
-        }
-
-        private static Player FindPlayer(string userId)
-        {
+            if (Player.List == null) return null;
             return Player.List.FirstOrDefault(p =>
             {
-                try { return p?.UserId == userId; }
+                try { return p != null && PlayerIdHelper.GetId(p) == playerId; }
                 catch { return false; }
             });
         }

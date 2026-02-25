@@ -27,6 +27,8 @@ Atualizado conforme o estado do projeto.
 - [x] `RunSafe()` no ModuleBase; `CallDelayed(delay, player, action)` no CoroutineHelper
 - [x] ExiledBridge (CASSIE/broadcast quando EXILED está presente)
 - [x] README da framework em inglês com resumo de features
+- [x] **Curto prazo (1–4):** Null-safety nos utilities; BroadcastManager por prioridade; XML docs; PlayerIdHelper unificado
+- [x] **Médio prazo (8–10):** Dependências entre módulos (RequiredModules); hooks OnPlayerHurting/OnPlayerDying + QOLEventBus; Config por módulo JSON (ConfigManager + Blackout exemplo)
 
 ---
 
@@ -36,10 +38,10 @@ Atualizado conforme o estado do projeto.
 
 | # | Tarefa | Prioridade | Notas |
 |---|--------|------------|--------|
-| 1 | Garantir null-safety em todos os utilities (MapUtilities, RoundUtilities, etc.) | P1 | Evitar NRE quando `Player.List` ou `Map.Rooms` têm entradas inválidas |
-| 2 | BroadcastManager: processar fila por prioridade (ordenar por `Priority` antes de enviar) | P2 | Hoje a fila é FIFO; prioridade está no modelo mas não é usada |
-| 3 | Documentar XML (summary) em APIs públicas que ainda não têm | P2 | Especialmente Utilities e Extensions |
-| 4 | Unificar identificação de jogador (UserId vs InstanceID) em PlayerDataStore/CooldownManager/BroadcastManager | P2 | Usar o mesmo `GetId(player)` em todos para consistência |
+| ~~1~~ | ~~Garantir null-safety em todos os utilities~~ | P1 | ✅ Feito: MapUtilities, RoundUtilities, BroadcastManager, CassieHelper, RandomHelper, RespawnManager |
+| ~~2~~ | ~~BroadcastManager: processar fila por prioridade~~ | P2 | ✅ Feito: fila é List; ordenação por Priority (desc) antes de enviar |
+| ~~3~~ | ~~Documentar XML (summary) em APIs públicas~~ | P2 | ✅ Feito: MapUtilities, RoundUtilities, PlayerDataStore, CooldownManager, BroadcastManager, PlayerIdHelper |
+| ~~4~~ | ~~Unificar identificação de jogador~~ | P2 | ✅ Feito: `PlayerIdHelper.GetId(Player)` usado em PlayerDataStore, CooldownManager, BroadcastManager, DamageModifierSystem, RespawnManager |
 
 ### Plugin QOL
 
@@ -57,9 +59,9 @@ Atualizado conforme o estado do projeto.
 
 | # | Tarefa | Prioridade | Notas |
 |---|--------|------------|--------|
-| 8 | Suporte a dependências entre módulos (ex.: “Módulo B só ativa se Módulo A estiver ativo”) | P2 | Opcional em IModule ou via atributo |
-| 9 | Hook `OnPlayerDamaged` / `OnPlayerDied` no ModuleManager (se LabAPI expuser) e encaminhar para módulos | P2 | Útil para stats, achievements, modifiers |
-| 10 | Config por módulo em JSON (ConfigManager) usada de facto nos módulos do QOL | P2 | Hoje a config é central no QOLConfig; migrar gradualmente quem fizer sentido |
+| ~~8~~ | ~~Suporte a dependências entre módulos~~ | P2 | ✅ Feito: ModuleBase.RequiredModules; ModuleManager verifica dependências |
+| ~~9~~ | ~~Hook OnPlayerDamaged/OnPlayerDied no ModuleManager~~ | P2 | ✅ Feito: Hurting/Dying; OnPlayerHurting/OnPlayerDying; QOLEventBus |
+| ~~10~~ | ~~Config por módulo em JSON (ConfigManager)~~ | P2 | ✅ Feito: ConfigDirectory no plugin; LoadModuleConfig/SaveModuleConfig; Blackout JSON |
 
 ### Roles e abilities
 

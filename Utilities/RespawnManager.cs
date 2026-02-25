@@ -27,7 +27,7 @@ namespace QOLFramework.Utilities
 
             var pending = new PendingRespawn
             {
-                PlayerId = GetId(player),
+                PlayerId = PlayerIdHelper.GetId(player),
                 Role = role,
                 ScheduledTime = DateTime.UtcNow.AddSeconds(delay)
             };
@@ -64,6 +64,7 @@ namespace QOLFramework.Utilities
 
         public static void RespawnAllDead(RoleTypeId role, float delay = 0f)
         {
+            if (Player.List == null) return;
             var dead = Player.List.Where(p =>
                 p != null && !p.IsDestroyed && p.Team == Team.Dead).ToList();
 
@@ -74,14 +75,14 @@ namespace QOLFramework.Utilities
         public static bool CancelPendingRespawn(Player player)
         {
             if (player == null) return false;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             return _pendingRespawns.RemoveAll(p => p.PlayerId == id) > 0;
         }
 
         public static bool HasPendingRespawn(Player player)
         {
             if (player == null) return false;
-            var id = GetId(player);
+            var id = PlayerIdHelper.GetId(player);
             return _pendingRespawns.Any(p => p.PlayerId == id);
         }
 
@@ -93,24 +94,19 @@ namespace QOLFramework.Utilities
 
         private static void SetRole(Player player, RoleTypeId role)
         {
-            try { player.SetRole(role); }
+            try { player?.SetRole(role); }
             catch (Exception ex)
             {
                 LabApi.Features.Console.Logger.Error($"[QOL:Respawn] Failed to set role: {ex.Message}");
             }
         }
 
-        private static string GetId(Player player)
+        private static Player FindPlayer(string playerId)
         {
-            try { return player.UserId ?? "unknown"; }
-            catch { return "unknown"; }
-        }
-
-        private static Player FindPlayer(string userId)
-        {
+            if (Player.List == null) return null;
             return Player.List.FirstOrDefault(p =>
             {
-                try { return p?.UserId == userId; }
+                try { return p != null && PlayerIdHelper.GetId(p) == playerId; }
                 catch { return false; }
             });
         }

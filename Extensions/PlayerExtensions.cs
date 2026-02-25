@@ -9,6 +9,14 @@ namespace QOLFramework.Extensions
 {
     public static class PlayerExtensions
     {
+        /// <summary>Indica se o jogador é válido (não nulo, não destruído, ReferenceHub presente). Use antes de efeitos que alterem estado.</summary>
+        public static bool IsValid(this Player player)
+        {
+            if (player == null) return false;
+            try { return !player.IsDestroyed && player.ReferenceHub != null; }
+            catch { return false; }
+        }
+
         /// <summary>Verifica se o jogador tem a permissão (via <see cref="PermissionHelper.CheckPermission"/>). Por defeito retorna true.</summary>
         public static bool HasQOLPermission(this Player player, string permission)
         {
@@ -42,6 +50,7 @@ namespace QOLFramework.Extensions
 
         public static Player GetClosestPlayer(this Player player, bool sameTeam = false)
         {
+            if (player == null || !player.IsValid()) return null;
             Player closest = null;
             float closestDist = float.MaxValue;
 
@@ -63,6 +72,7 @@ namespace QOLFramework.Extensions
 
         public static IEnumerable<Player> GetNearbyPlayers(this Player player, float radius)
         {
+            if (player == null || !player.IsValid()) return System.Linq.Enumerable.Empty<Player>();
             return Player.List.Where(p =>
                 p != player &&
                 p.Team != Team.Dead &&

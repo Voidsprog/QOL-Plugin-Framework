@@ -6,13 +6,17 @@ using PlayerRoles;
 
 namespace QOLFramework.Utilities
 {
+    /// <summary>Utilitários de ronda: tempo decorrido, contagens de jogadores por equipa/role.</summary>
     public static class RoundUtilities
     {
         private static DateTime _roundStartTime;
         private static bool _roundActive;
 
+        /// <summary>True se a ronda já começou e ainda não terminou.</summary>
         public static bool IsRoundActive => _roundActive;
+        /// <summary>Tempo decorrido desde o início da ronda (Zero se não ativa).</summary>
         public static TimeSpan RoundElapsed => _roundActive ? DateTime.UtcNow - _roundStartTime : TimeSpan.Zero;
+        /// <summary>Segundos decorridos desde o início da ronda.</summary>
         public static int RoundElapsedSeconds => (int)RoundElapsed.TotalSeconds;
 
         internal static void OnRoundStarted()
@@ -32,57 +36,60 @@ namespace QOLFramework.Utilities
             _roundStartTime = DateTime.UtcNow;
         }
 
+        /// <summary>True se já passaram pelo menos os segundos indicados desde o início da ronda.</summary>
         public static bool HasElapsed(int seconds) => RoundElapsedSeconds >= seconds;
+        /// <summary>True se o tempo indicado já passou desde o início da ronda.</summary>
         public static bool HasElapsed(TimeSpan time) => RoundElapsed >= time;
 
+        /// <summary>Número de jogadores vivos (0 se Player.List for null).</summary>
         public static int GetAlivePlayerCount()
         {
-            return Player.List.Count(p =>
-                p != null && !p.IsDestroyed && p.Team != Team.Dead);
+            return Player.List?.Count(p =>
+                p != null && !p.IsDestroyed && p.Team != Team.Dead) ?? 0;
         }
 
         public static int GetAliveHumanCount()
         {
-            return Player.List.Count(p =>
+            return Player.List?.Count(p =>
                 p != null && !p.IsDestroyed &&
-                p.Team != Team.Dead && p.Team != Team.SCPs);
+                p.Team != Team.Dead && p.Team != Team.SCPs) ?? 0;
         }
 
         public static int GetAliveScpCount()
         {
-            return Player.List.Count(p =>
-                p != null && !p.IsDestroyed && p.Team == Team.SCPs);
+            return Player.List?.Count(p =>
+                p != null && !p.IsDestroyed && p.Team == Team.SCPs) ?? 0;
         }
 
         public static IEnumerable<Player> GetAlivePlayers()
         {
-            return Player.List.Where(p =>
-                p != null && !p.IsDestroyed && p.Team != Team.Dead);
+            return Player.List?.Where(p =>
+                p != null && !p.IsDestroyed && p.Team != Team.Dead) ?? Enumerable.Empty<Player>();
         }
 
         public static IEnumerable<Player> GetAliveHumans()
         {
-            return Player.List.Where(p =>
+            return Player.List?.Where(p =>
                 p != null && !p.IsDestroyed &&
-                p.Team != Team.Dead && p.Team != Team.SCPs);
+                p.Team != Team.Dead && p.Team != Team.SCPs) ?? Enumerable.Empty<Player>();
         }
 
         public static IEnumerable<Player> GetAliveScps()
         {
-            return Player.List.Where(p =>
-                p != null && !p.IsDestroyed && p.Team == Team.SCPs);
+            return Player.List?.Where(p =>
+                p != null && !p.IsDestroyed && p.Team == Team.SCPs) ?? Enumerable.Empty<Player>();
         }
 
         public static IEnumerable<Player> GetPlayersByTeam(Team team)
         {
-            return Player.List.Where(p =>
-                p != null && !p.IsDestroyed && p.Team == team);
+            return Player.List?.Where(p =>
+                p != null && !p.IsDestroyed && p.Team == team) ?? Enumerable.Empty<Player>();
         }
 
         public static IEnumerable<Player> GetPlayersByRole(RoleTypeId role)
         {
-            return Player.List.Where(p =>
-                p != null && !p.IsDestroyed && p.Role == role);
+            return Player.List?.Where(p =>
+                p != null && !p.IsDestroyed && p.Role == role) ?? Enumerable.Empty<Player>();
         }
 
         public static Player GetRandomAlivePlayer(Team? team = null)
@@ -94,6 +101,7 @@ namespace QOLFramework.Utilities
         public static Dictionary<Team, int> GetTeamCounts()
         {
             var counts = new Dictionary<Team, int>();
+            if (Player.List == null) return counts;
             foreach (var p in Player.List)
             {
                 if (p == null || p.IsDestroyed) continue;
@@ -104,6 +112,7 @@ namespace QOLFramework.Utilities
             return counts;
         }
 
+        /// <summary>Formata o tempo decorrido (ex.: "05:30" ou "1:02:15").</summary>
         public static string FormatElapsed()
         {
             var elapsed = RoundElapsed;
