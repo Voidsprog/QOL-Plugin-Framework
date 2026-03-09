@@ -207,17 +207,21 @@ namespace QOLFramework.Core
         private void OnPlayerLeft(LabApi.Events.Arguments.PlayerEvents.PlayerLeftEventArgs ev)
         {
             if (ev?.Player == null) return;
-            PlayerDataStore.ClearPlayer(ev.Player);
-            CooldownManager.ClearPlayer(ev.Player);
-            BroadcastManager.ClearQueue(ev.Player);
-            foreach (var module in EnabledModules)
+            try
             {
-                try { module.OnPlayerLeft(ev.Player); }
-                catch (Exception ex)
+                PlayerDataStore.ClearPlayer(ev.Player);
+                CooldownManager.ClearPlayer(ev.Player);
+                BroadcastManager.ClearQueue(ev.Player);
+                foreach (var module in EnabledModules)
                 {
-                    LabApi.Features.Console.Logger.Error($"[QOL] Module '{module.Name}' error in OnPlayerLeft: {ex}");
+                    try { module.OnPlayerLeft(ev.Player); }
+                    catch (Exception ex)
+                    {
+                        LabApi.Features.Console.Logger.Error($"[QOL] Module '{module.Name}' error in OnPlayerLeft: {ex}");
+                    }
                 }
             }
+            catch (ArgumentNullException) { /* ev.Player null noutros plugins pode causar falha em cadeia */ }
         }
 
         private void OnWaitingForPlayers()

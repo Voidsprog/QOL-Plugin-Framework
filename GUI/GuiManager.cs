@@ -97,7 +97,8 @@ namespace QOLFramework.GUI
 
         private void OnPlayerLeft(LabApi.Events.Arguments.PlayerEvents.PlayerLeftEventArgs ev)
         {
-            _screens.Remove(ev.Player);
+            if (ev?.Player == null) return;
+            try { _screens.Remove(ev.Player); } catch (ArgumentNullException) { }
         }
 
         private void OnWaitingForPlayers()

@@ -50,23 +50,31 @@ namespace QOLFramework.Tweaks
 
         private void OnRoleChanged(PlayerChangedRoleEventArgs ev)
         {
-            if (ev.NewRole.RoleTypeId == TargetScp)
+            try
             {
-                Timing.CallDelayed(0.5f, () =>
+                if (ev?.Player == null) return;
+                if (ev.NewRole?.RoleTypeId == TargetScp)
                 {
-                    if (!ev.Player.IsDestroyed && ev.Player.Role == TargetScp)
-                        ApplyToPlayer(ev.Player);
-                });
+                    Timing.CallDelayed(0.5f, () =>
+                    {
+                        if (ev.Player != null && !ev.Player.IsDestroyed && ev.Player.Role == TargetScp)
+                            ApplyToPlayer(ev.Player);
+                    });
+                }
+                else
+                    _affectedPlayers.Remove(ev.Player);
             }
-            else
-            {
-                _affectedPlayers.Remove(ev.Player);
-            }
+            catch (Exception) { /* evitar propagar */ }
         }
 
         private void OnPlayerLeft(PlayerLeftEventArgs ev)
         {
-            _affectedPlayers.Remove(ev.Player);
+            try
+            {
+                if (ev?.Player == null) return;
+                _affectedPlayers.Remove(ev.Player);
+            }
+            catch (Exception) { /* evitar propagar; ev.Player null pode causar falha noutros plugins */ }
         }
 
         private void OnWaiting()

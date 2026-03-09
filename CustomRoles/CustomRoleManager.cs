@@ -122,21 +122,22 @@ namespace QOLFramework.CustomRoles
 
         private void OnChangedRole(PlayerChangedRoleEventArgs ev)
         {
+            if (ev?.Player == null) return;
             var customRole = GetPlayerRole(ev.Player);
-            if (customRole != null && ev.NewRole.RoleTypeId != customRole.BaseRole)
+            if (customRole != null && ev.NewRole?.RoleTypeId != customRole.BaseRole)
             {
                 customRole.RemoveInternal(ev.Player);
             }
-            // Jogador morreu ou mudou para espectador
             if (ev.Player.Team == Team.Dead)
             {
-                RemoveFromAllRoles(ev.Player);
+                try { RemoveFromAllRoles(ev.Player); } catch (ArgumentNullException) { }
             }
         }
 
         private void OnPlayerLeft(PlayerLeftEventArgs ev)
         {
-            RemoveFromAllRoles(ev.Player);
+            if (ev?.Player == null) return;
+            try { RemoveFromAllRoles(ev.Player); } catch (ArgumentNullException) { }
         }
 
         private void OnWaitingForPlayers()
