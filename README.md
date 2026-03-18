@@ -1,56 +1,52 @@
 # QOL Framework
 
-Framework extensível para plugins **LabAPI** em SCP: Secret Laboratory. Usado pelo plugin **QOL - Quality of Life**.
+Extensible framework for **LabAPI** plugins in SCP: Secret Laboratory. Used by the **QOL - Quality of Life** plugin.
 
-## Estrutura
+## Structure
 
-| Área | Descrição |
-|------|-----------|
-| **Core** | `QOLFrameworkLoader`, `ModuleManager`, `IModule` / `ModuleBase` — ciclo de vida do plugin e módulos |
-| **Events** | `QOLEventBus` — subscribe/publish com prioridade; eventos de roles, módulos, jogador (Joined/Left, Damaged, Died), ItemUsed, RoundStarting |
-| **CustomRoles** | `CustomRoleManager`, `CustomRole`, `RoleAbility` — roles custom com assign, tick, spawn message |
-| **CustomSCPs** | `CustomScpManager`, `CustomScp`, `ScpAbility` — SCPs custom (baseados em roles) |
-| **Tweaks** | `TweakManager`, `ITweak` — alterações a parâmetros (ex.: SCP-106 slow, SCP-173 health) |
-| **GUI** | `GuiManager`, `GuiScreen`, `GuiLabel`, `GuiProgressBar` — hints e elementos por jogador |
-| **Models** | `PrimitiveModel`, `PrimitiveShape`, `PrimitiveModelSpawner` — modelos 3D com AdminToys (LabExtended) |
-| **CustomItems** | `CustomItemManager` — triggers de pickup no mundo |
-| **Config** | `ModuleConfig`, `ConfigManager` — config base e load/save JSON por módulo |
-| **Permissions** | `PermissionHelper`, extensão `Player.HasQOLPermission(string)` — verificação de permissões (integrável com LabAPI/EXILED) |
-| **Hybrid** | `ExiledBridge` — CASSIE/Broadcast quando EXILED está presente |
-| **Extensions** | `PlayerExtensions`, `StringExtensions` — helpers para jogadores e strings |
+| Area | Description |
+|------|-------------|
+| **Core** | `QOLFrameworkLoader`, `ModuleManager`, `IModule` / `ModuleBase` — plugin and module lifecycle |
+| **Events** | `QOLEventBus` — subscribe/publish with priority; events for roles, modules, player (Joined/Left, Damaged, Died), ItemUsed, RoundStarting |
+| **CustomRoles** | `CustomRoleManager`, `CustomRole`, `RoleAbility` — custom roles with assign, tick, spawn message |
+| **CustomSCPs** | `CustomScpManager`, `CustomScp`, `ScpAbility` — custom SCPs (role-based) |
+| **Tweaks** | `TweakManager`, `ITweak` — parameter adjustments (e.g.: SCP-106 slow, SCP-173 health) |
+| **GUI** | `GuiManager`, `GuiScreen`, `GuiLabel`, `GuiProgressBar` — hints and per-player UI elements |
+| **Models** | `PrimitiveModel`, `PrimitiveShape`, `PrimitiveModelSpawner` — 3D models using AdminToys (LabExtended) |
+| **CustomItems** | `CustomItemManager` — world pickup triggers |
+| **Config** | `ModuleConfig`, `ConfigManager` — base config and per-module JSON load/save |
+| **Permissions** | `PermissionHelper`, extension `Player.HasQOLPermission(string)` — permission checks (integrates with LabAPI/EXILED) |
+| **Hybrid** | `ExiledBridge` — CASSIE/Broadcast when EXILED is present |
+| **Extensions** | `PlayerExtensions`, `StringExtensions` — helpers for players and strings |
 
-## Ciclo de vida dos módulos
+## Module lifecycle
 
-- **OnEnabled** / **OnDisabled** — ativar/desativar
-- **OnPlayerJoined(Player)** / **OnPlayerLeft(Player)** — jogador entra/sai
-- **OnRoundStarted** / **OnRoundEnded** / **OnWaitingForPlayers** — round
+- **OnEnabled** / **OnDisabled** — enable/disable  
+- **OnPlayerJoined(Player)** / **OnPlayerLeft(Player)** — player join/leave  
+- **OnRoundStarted** / **OnRoundEnded** / **OnWaitingForPlayers** — round events  
 
-Registar módulos antes de `Framework.Initialize()`. O `ModuleManager` encaminha os eventos do LabAPI para cada módulo ativo.
+Register modules before `Framework.Initialize()`. The `ModuleManager` routes LabAPI events to each active module.
 
-## Eventos (QOLEventBus)
+## Events (QOLEventBus)
 
 - `Subscribe<T>(Action<T> handler, int priority = 0)` / `Unsubscribe<T>` / `Publish<T>`
-- Tipos úteis: `PlayerJoinedEvent`, `PlayerLeftEvent`, `PlayerDamagedEvent`, `PlayerDiedEvent`, `ItemUsedEvent`, `RoundStartingEvent`, `CustomRoleAssignedEvent`, etc.
-- Definir `IsCancelled = true` em eventos que o suportem para cancelar a ação (conforme o publicador).
+- Useful types: `PlayerJoinedEvent`, `PlayerLeftEvent`, `PlayerDamagedEvent`, `PlayerDiedEvent`, `ItemUsedEvent`, `RoundStartingEvent`, `CustomRoleAssignedEvent`, etc.
+- Set `IsCancelled = true` on supported events to cancel the action (depending on the publisher).
 
-## Config opcional
+## Optional config
 
 ```csharp
 ConfigManager.ConfigDirectory = "C:\\...\\LabAPI\\plugins\\QOL";
-var config = ConfigManager.LoadOrCreate<MyConfig>("MeuModulo");
-ConfigManager.Save("MeuModulo", config);
-```
+var config = ConfigManager.LoadOrCreate<MyConfig>("MyModule");
+ConfigManager.Save("MyModule", config);
 
-## Permissões
+Permissions
 
-Por defeito todos têm permissão. Para integrar com LabAPI/LabExtended:
+By default, everyone has permission. To integrate with LabAPI/LabExtended:
+PermissionHelper.CheckPermission = (player, permission) => /* e.g.: ExPlayer.Get(player).HasPermission(permission) */;
+// Then, in commands:
+if (!player.HasQOLPermission("qol.command")) return;
 
-```csharp
-PermissionHelper.CheckPermission = (player, permission) => /* ex.: ExPlayer.Get(player).HasPermission(permission) */;
-// Depois, nos comandos:
-if (!player.HasQOLPermission("qol.comando")) return;
-```
+Dependencies
 
-## Dependências
-
-- LabAPI, 0LabExtended (opcional para modelos 3D), Assembly-CSharp (jogo), Mirror, Newtonsoft.Json (config).
+LabAPI, LabExtended (optional for 3D models), Assembly-CSharp (game), Mirror, Newtonsoft.Json (config).
