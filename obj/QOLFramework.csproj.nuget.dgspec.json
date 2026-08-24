@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\5600\\Desktop\\QOL\\QOLFramework\\QOLFramework.csproj": {}
+    "C:\\Users\\5600\\Desktop\\QOL\\QOL-Plugin-Framework\\QOLFramework.csproj": {}
   },
   "projects": {
-    "C:\\Users\\5600\\Desktop\\QOL\\QOLFramework\\QOLFramework.csproj": {
+    "C:\\Users\\5600\\Desktop\\QOL\\QOL-Plugin-Framework\\QOLFramework.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\5600\\Desktop\\QOL\\QOLFramework\\QOLFramework.csproj",
+        "projectUniqueName": "C:\\Users\\5600\\Desktop\\QOL\\QOL-Plugin-Framework\\QOLFramework.csproj",
         "projectName": "QOLFramework",
-        "projectPath": "C:\\Users\\5600\\Desktop\\QOL\\QOLFramework\\QOLFramework.csproj",
+        "projectPath": "C:\\Users\\5600\\Desktop\\QOL\\QOL-Plugin-Framework\\QOLFramework.csproj",
         "packagesPath": "C:\\Users\\5600\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\5600\\Desktop\\QOL\\QOLFramework\\obj\\",
+        "outputPath": "C:\\Users\\5600\\Desktop\\QOL\\QOL-Plugin-Framework\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -48,12 +48,6 @@
         "net48": {
           "targetAlias": "net48",
           "dependencies": {
-            "Microsoft.NETFramework.ReferenceAssemblies": {
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[1.0.3, )",
-              "autoReferenced": true
-            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.3, )"
